@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FutureScope Forecasts</title>
+
+  <!-- TailwindCSS for quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js for interactive graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-b from-blue-200 to-blue-50 flex flex-col min-h-screen">
+
+  <!-- ====== Header ====== -->
+  <header class="bg-white/70 shadow p-6 text-center">
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
+      FutureScope: Business & Space Industry Forecasts
+    </h1>
+    <p class="text-gray-600 mt-1 text-lg">
+      Interactive investment risk & growth predictions
+    </p>
+  </header>
+
+  <!-- ====== Main Content ====== -->
+  <main class="flex-grow flex flex-col items-center p-6">
+
+    <!-- Chart Canvas -->
+    <canvas id="forecastChart" width="800" height="400"
+            class="mb-8 border-2 border-gray-300 rounded-lg shadow-lg bg-white">
+    </canvas>
+
+    <!-- Dropdown Controls -->
+    <div class="flex flex-wrap gap-4 justify-center">
+      <select id="industry"
+              class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <option value="Space">Space</option>
+        <option value="Energy">Energy</option>
+        <option value="Biotech">Biotech</option>
+      </select>
+
+      <select id="year"
+              class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+        <option value="2027">2027</option>
+      </select>
+    </div>
+  </main>
+
+  <!-- ====== Footer ====== -->
+  <footer class="bg-white/70 text-center p-4 text-gray-600 text-sm">
+    © 2025 FutureScope Hackathon Demo
+  </footer>
+
+  <!-- ====== JavaScript ====== -->
+  <script>
+    // Example forecast data (replace with your own predictions or fetch from a JSON endpoint)
+    const forecast = {
+      Space:  {2025:150, 2026:160, 2027:175},
+      Energy: {2025:200, 2026:210, 2027:220},
+      Biotech:{2025:120, 2026:130, 2027:145}
+    };
+
+    const ctx = document.getElementById('forecastChart').getContext('2d');
+    let chart;
+
+    function updateChart(industry){
+      const years  = Object.keys(forecast[industry]);
+      const values = Object.values(forecast[industry]);
+
+      if (chart) chart.destroy(); // refresh chart when user changes industry
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [{
+            label: industry + ' Forecast ($B)',
+            data: values,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.25)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 5,
+            pointBackgroundColor: '#2563eb'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: 'Billions of USD' }
+            },
+            x: {
+              title: { display: true, text: 'Year' }
+            }
+          }
+        }
+      });
+    }
+
+    // Initial chart
+    updateChart('Space');
+
+    // Dropdown listeners
+    document.getElementById('industry').addEventListener('change', e => {
+      updateChart(e.target.value);
+    });
+
+    document.getElementById('year').addEventListener('change', e => {
+      const yr = e.target.value;
+      const ind = document.getElementById('industry').value;
+      const val = forecast[ind][yr];
+      alert(`${ind} forecast for ${yr}: $${val}B`);
+    });
+  </script>
+
+</body>
+</html>

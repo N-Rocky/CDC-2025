@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        body {
+            display: flex;
+            width: 100dvw;
+            height: 100dvh;
+            background-color: black;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            width: 80%;
+            height: 80%;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script src="data.js"></script>
+    <script type="text/javascript">
+        let canvas; let ctx;
+        function init() {
+            canvas = document.getElementById("canvas");
+            canvas.width = document.body.clientWidth;
+            canvas.height = document.body.clientHeight;
+            ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+            Graph(dataset, "Table1", "Space economy1");
+        }
+
+        function Graph(data, table, industry) {
+            const width = canvas.width; const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+            const years = Object.keys(data[table]);
+            let points = []; let min = null; let max = null;
+            for (let index = 0; index < years.length; index++) { // Plot years
+                const year = years[index];
+                const font = 20; ctx.font = `${font}px arial`; ctx.fillStyle = "rgb(255, 0, 0)"; ctx.textAlign = "center";
+                ctx.fillText(year, (width/2) + (index - (years.length/2) + 0.5) * (width / years.length), height - font);
+                const point = data[table][year][industry];
+                if (min == null || point < min) { min = point; }
+                if (max == null || point > max) { max = point; }
+                points.push(point);
+            }
+            for (let index = 0; index + 1 < points.length; index++) {
+                const margin = 1.2;
+                const start = (height - ((height / (max - min)) * (points[index] - min)) / margin) / margin;
+                const end = (height - ((height / (max - min)) * (points[index + 1] - min)) / margin) / margin;
+                ctx.beginPath();
+                ctx.moveTo((width/2) + (index - (years.length/2) + 0.5) * (width / years.length), start);
+                ctx.lineTo((width/2) + (index + 1 - (years.length/2) + 0.5) * (width / years.length), end);
+                ctx.lineWidth = 10;
+                ctx.strokeStyle = "red";
+                ctx.lineCap = "round";
+                ctx.stroke();
+            }
+
+            /**
+            if (gridlines) { // Draw gridlines
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10])
+                ctx.beginPath(); // Draw horizontal grid
+                ctx.moveTo(0, -(logic.camera.position.y - logic.camera.resolution.y / 2));
+                ctx.lineTo(canvas.width, -(logic.camera.position.y - logic.camera.resolution.y / 2));
+                ctx.stroke();
+                ctx.beginPath(); // Draw vertical grid
+                ctx.moveTo(-(logic.camera.position.x - logic.camera.resolution.x / 2), 0);
+                ctx.lineTo(-(logic.camera.position.x - logic.camera.resolution.x / 2), canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            for (let entity of logic.entities) { // Draw each entity
+                let x = entity.position.x / coordinateScaler - (logic.camera.position.x - logic.camera.resolution.x / 2);
+                let y = entity.position.y / coordinateScaler - (logic.camera.position.y - logic.camera.resolution.y / 2)
+                let color = entity.color;
+                ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                ctx.beginPath();
+                ctx.arc(x, y, entity.radius / coordinateScaler, 0, 2 * Math.PI);
+                ctx.strokeStyle = "rgb(0, 0, 0)";
+                ctx.stroke();
+                ctx.fill();
+                if (names) { // Draw name on top
+                    ctx.font = String(entity.radius / 2 / coordinateScaler) + "px arial";
+                    ctx.fillStyle = "rgb(0, 0, 0)";
+                    ctx.strokeStyle = "rgb(255, 255, 255)";
+                    ctx.textAlign = "center";
+                    ctx.strokeText(entity.name, x, y);
+                    ctx.fillText(entity.name, x, y);
+                }
+            }
+
+            // Draw statistics
+            ctx.font = "20px arial";
+            ctx.fillStyle = "rgb(255, 255, 255)";
+            ctx.strokeStyle = "rgb(0, 0, 0)";
+            ctx.textAlign = "left";
+            ctx.strokeText("Viewport: (" + logic.camera.position.x + ", " + logic.camera.position.y + ")", 10, canvas.height - 40);
+            ctx.fillText("Viewport: (" + logic.camera.position.x + ", " + logic.camera.position.y + ")", 10, canvas.height - 40);
+            ctx.strokeText("Coordinate Scaler: (" + coordinateScaler + ")", 10, canvas.height - 10);
+            ctx.fillText("Coordinate Scaler: (" + coordinateScaler + ")", 10, canvas.height - 10);
+
+            if (logic.running && !paused) { ctx.fillStyle = "rgb(0, 255, 0)"; }
+            else if (logic.running && paused) { ctx.fillStyle = "rgb(255, 255, 0)"; }
+            else { ctx.fillStyle = "rgb(255, 0, 0)"; }
+            ctx.font = "35px arial";
+            ctx.textAlign = "right";
+            ctx.strokeText("SIM", canvas.width - 20, canvas.height - 20);
+            ctx.fillText("SIM", canvas.width - 20, canvas.height - 20);
+
+            window.requestAnimationFrame(RenderFrame);**/
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -27,14 +27,14 @@
   <main class="flex-grow flex flex-col items-center p-6">
 
     <!-- Chart Canvas -->
-    <canvas id="canvas" width="800" height="400"
+    <canvas id="canvas" width="1000" height="400"
       class="mb-8 border-2 border-gray-300 rounded-lg shadow-lg bg-white">
     </canvas>
 
     <!-- ====== Dropdown Controls ====== -->
     <div class="flex flex-wrap gap-4 justify-center">
       <select id="industry" class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></select>
-      <select id="table" class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></select>
+      <fieldset id="table" class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></select>
     </div>
   </main>
 
@@ -53,9 +53,15 @@
       ctx = canvas.getContext("2d", { willReadFrequently: true });
 
       for (const table in dataset) { // Add tables
-        const option = document.createElement("option");
+        const option = document.createElement("input");
+        const label = document.createElement("label");
+        option.id = table;
+        label.htmlFor = table;
+        label.textContent = table;
+        option.type = "checkbox";
         option.value = table;
         option.textContent = table;
+        document.getElementById("table").appendChild(label);
         document.getElementById("table").appendChild(option);
       }
 
@@ -65,49 +71,71 @@
         option.textContent = industry;
         document.getElementById("industry").appendChild(option);
       }
-
-      Graph(dataset, "Table1", "Space economy1");
     }
 
-    function Graph(data, table, industry) {
+    function Graph(data, tables, industry) { // Plot dataset via table and industry
       const width = canvas.width; const height = canvas.height;
       ctx.clearRect(0, 0, width, height);
-      const years = Object.keys(data[table]);
-      let points = []; let min = null; let max = null;
-      for (let index = 0; index < years.length; index++) { // Plot years
-          const year = years[index];
-          const font = 20; ctx.font = `${font}px arial`; ctx.fillStyle = "rgb(255, 0, 0)"; ctx.textAlign = "center";
-          ctx.fillText(year, (width/2) + (index - (years.length/2) + 0.5) * (width / years.length), height - font);
-          const point = data[table][year][industry];
+      let min = null; let max = null; const margin = 1.2;
+      for (let tableIndex = 0; tableIndex < tables.length; tableIndex++) {
+        if (!tables[tableIndex].checked) { continue; }
+        const table = tables[tableIndex].value;
+        for (const year in data[table]) {
+          const point = Math.round(data[table][year][industry]);
           if (min == null || point < min) { min = point; }
           if (max == null || point > max) { max = point; }
-          points.push(point);
+        }
       }
-      for (let index = 0; index + 1 < points.length; index++) {
-          const margin = 1.2;
-          const start = (height - ((height / (max - min)) * (points[index] - min)) / margin) / margin;
-          const end = (height - ((height / (max - min)) * (points[index + 1] - min)) / margin) / margin;
-          ctx.beginPath();
-          ctx.moveTo((width/2) + (index - (years.length/2) + 0.5) * (width / years.length), start);
-          ctx.lineTo((width/2) + (index + 1 - (years.length/2) + 0.5) * (width / years.length), end);
-          ctx.lineWidth = 10;
-          ctx.strokeStyle = "red";
-          ctx.lineCap = "round";
-          ctx.stroke();
+      for (let tableIndex = 0; tableIndex < tables.length; tableIndex++) {
+        if (!tables[tableIndex].checked) { continue; }
+        switch (tableIndex) {
+          case 0: ctx.strokeStyle = "red"; break;
+          case 1: ctx.strokeStyle = "green"; break;
+          case 2: ctx.strokeStyle = "blue"; break;
+          case 3: ctx.strokeStyle = "yellow"; break;
+          case 4: ctx.strokeStyle = "orange"; break;
+          case 5: ctx.strokeStyle = "pink"; break;
+          case 6: ctx.strokeStyle = "purple"; break;
+          case 7: ctx.strokeStyle = "black"; break;
+        }
+        const table = tables[tableIndex].value;
+        const years = Object.keys(data[table]);
+        let points = [];
+        for (let index = 0; index < years.length; index++) { // Plot years
+            const year = years[index];
+            const font = 20; ctx.font = `${font}px arial`; ctx.fillStyle = "rgb(0, 0, 0)"; ctx.textAlign = "center";
+            ctx.fillText(year, (width/2) + (index - (years.length/2) + 0.5) * (width / years.length) / margin, height - font);
+            const point = Math.round(data[table][year][industry]);
+            points.push(point);
+        }
+        for (let index = 0; index + 1 < points.length; index++) { // Plot points
+            const start = (height - ((height / (max - min)) * (points[index] - min)) / margin) / margin;
+            const end = (height - ((height / (max - min)) * (points[index + 1] - min)) / margin) / margin;
+            ctx.beginPath();
+            ctx.moveTo((width/2) + (index - (years.length/2) + 0.5) * (width / years.length) / margin, start);
+            ctx.lineTo((width/2) + (index + 1 - (years.length/2) + 0.5) * (width / years.length) / margin, end);
+            ctx.lineWidth = 5;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+      }
+      for (let spot = 10**(min.toString().length - 1); spot < max; spot += (max - min) / 5) {
+        const font = 20; ctx.font = `${font}px arial`; ctx.fillStyle = "rgb(0, 0, 0)"; ctx.textAlign = "left";
+        ctx.fillText(Math.round(spot), font, (height - ((height / (max - min)) * (spot - min)) / margin) / margin);
       }
     }
 
     // Dropdown listeners
     document.getElementById("table").onchange = () => {
       Graph(dataset,
-        document.getElementById("table").value,
+        document.getElementById("table").querySelectorAll('input[type="checkbox"]'),
         document.getElementById("industry").value
       );
     }
 
     document.getElementById("industry").onchange = () => {
       Graph(dataset,
-        document.getElementById("table").value,
+        document.getElementById("table").querySelectorAll('input[type="checkbox"]'),
         document.getElementById("industry").value
       );
     }

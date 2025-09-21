@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FutureScope Forecasts</title>
+
+  <!-- TailwindCSS for quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js for interactive graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-b from-blue-200 to-blue-50 flex flex-col min-h-screen">
+
+  <!-- ====== Header ====== -->
+  <header class="bg-white/70 shadow p-6 text-center">
+    <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
+      FutureScope: Business & Space Industry Forecasts
+    </h1>
+    <p class="text-gray-600 mt-1 text-lg">
+      Interactive investment risk & growth predictions
+    </p>
+  </header>
+
+  <!-- ====== Main Content ====== -->
+  <main class="flex-grow flex flex-col items-center p-6">
+
+    <!-- Chart Canvas -->
+    <canvas id="canvas" width="800" height="400"
+      class="mb-8 border-2 border-gray-300 rounded-lg shadow-lg bg-white">
+    </canvas>
+
+    <!-- ====== Dropdown Controls ====== -->
+    <div class="flex flex-wrap gap-4 justify-center">
+      <select id="industry" class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></select>
+      <select id="table" class="p-3 rounded border border-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></select>
+    </div>
+  </main>
+
+  <!-- ====== Footer ====== -->
+  <footer class="bg-white/70 text-center p-4 text-gray-600 text-sm">
+    © 2025 FutureScope Hackathon Demo
+  </footer>
+
+  <script src="data.js"></script>
+  <script type="text/javascript">
+    let canvas; let ctx;
+    function init() {
+      canvas = document.getElementById("canvas");
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      for (const table in dataset) { // Add tables
+        const option = document.createElement("option");
+        option.value = table;
+        option.textContent = table;
+        document.getElementById("table").appendChild(option);
+      }
+
+      for (const industry in dataset["Table1"]["2012"]) { // Add industries
+        const option = document.createElement("option");
+        option.value = industry;
+        option.textContent = industry;
+        document.getElementById("industry").appendChild(option);
+      }
+
+      Graph(dataset, "Table1", "Space economy1");
+    }
+
+    function Graph(data, table, industry) {
+      const width = canvas.width; const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      const years = Object.keys(data[table]);
+      let points = []; let min = null; let max = null;
+      for (let index = 0; index < years.length; index++) { // Plot years
+          const year = years[index];
+          const font = 20; ctx.font = `${font}px arial`; ctx.fillStyle = "rgb(255, 0, 0)"; ctx.textAlign = "center";
+          ctx.fillText(year, (width/2) + (index - (years.length/2) + 0.5) * (width / years.length), height - font);
+          const point = data[table][year][industry];
+          if (min == null || point < min) { min = point; }
+          if (max == null || point > max) { max = point; }
+          points.push(point);
+      }
+      for (let index = 0; index + 1 < points.length; index++) {
+          const margin = 1.2;
+          const start = (height - ((height / (max - min)) * (points[index] - min)) / margin) / margin;
+          const end = (height - ((height / (max - min)) * (points[index + 1] - min)) / margin) / margin;
+          ctx.beginPath();
+          ctx.moveTo((width/2) + (index - (years.length/2) + 0.5) * (width / years.length), start);
+          ctx.lineTo((width/2) + (index + 1 - (years.length/2) + 0.5) * (width / years.length), end);
+          ctx.lineWidth = 10;
+          ctx.strokeStyle = "red";
+          ctx.lineCap = "round";
+          ctx.stroke();
+      }
+    }
+
+    // Dropdown listeners
+    document.getElementById("table").onchange = () => {
+      Graph(dataset,
+        document.getElementById("table").value,
+        document.getElementById("industry").value
+      );
+    }
+
+    document.getElementById("industry").onchange = () => {
+      Graph(dataset,
+        document.getElementById("table").value,
+        document.getElementById("industry").value
+      );
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
